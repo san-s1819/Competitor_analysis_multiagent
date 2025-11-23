@@ -1,0 +1,138 @@
+Product Requirements Document (PRD): CompetitorLens
+
+Project Name : CompetitorLens
+Version : 1.0 (MVP)
+Status : Draft
+Product Owner : Sanjay Sathyapriyan
+Last Updated : November 22, 2025
+
+1. Executive Summary
+CompetitorLens is an autonomous B2B SaaS platform that automates competitive analysis. By simply inputting a competitor's URL, the system employs a multi-agent AI pipeline to scrape, analyze, and synthesize scattered web data into high-value strategic "Battle Cards."
+
+Problem Statement:
+Sales teams and founders spend hours manually visiting competitor websites to understand pricing, feature gaps, and positioning. This process is slow, often skipped, and results in lost deals due to a lack of preparedness.
+
+Solution:
+A "Click-to-Intel" system where AI agents act as a virtual research team, delivering a comprehensive SWOT analysis and winning sales scripts in under 2 minutes.
+
+2. Target Audience
+
+Sales Development Reps (SDRs/AEs): Need quick "kill sheets" to handle objections during calls.
+
+Product Managers: Need to monitor competitor feature releases and pricing changes.
+
+Founders: Need to understand the landscape before pivoting or launching features.
+
+3. Functional Requirements
+
+3.1 Input Module
+
+FR.1: The system must accept a valid HTTP/HTTPS URL.
+
+FR.2: The system must validate the URL before processing (check if site is reachable).
+
+3.2 The Agent Pipeline (Backend)
+
+The core logic follows a Directed Acyclic Graph (DAG) executed by LangGraph.
+
+Stage 1: The Scout (Data Acquisition)
+
+FR.3: Must use Crawl4AI to navigate the target URL.
+
+FR.4: Must extract the "Main Pitch" (H1, H2, Hero text).
+
+FR.5: Must intelligently locate and scrape the /pricing page if linked from the home page.
+
+FR.6: Output must be clean Markdown, stripped of navbars/footers.
+
+Stage 2: The Analyst (Cognition)
+
+FR.7: Must chunk scraped Markdown and store it in ChromaDB (Ephemeral) for RAG.
+
+FR.8: Must query the vector store to answer specific questions:
+
+"What is the pricing model?"
+
+"Who is the target customer?"
+
+"What features are emphasized?"
+
+FR.9: Must deduce "Implicit Weaknesses" (e.g., if "Enterprise" is mentioned 50 times, "Small Business Support" is likely a weakness).
+
+Stage 3: The Strategist (Synthesis)
+
+FR.10: Must accept the structured analysis from Stage 2.
+
+FR.11: Must generate a "How to Win" narrative specifically tailored for a sales conversation.
+
+FR.12: Output must follow a strict Pydantic schema (JSON).
+
+4.3 Output & Visualization (Frontend)
+
+FR.13: Dashboard must render a 4-quadrant SWOT analysis.
+
+FR.14: Dashboard must display a unified Pricing Table, standardizing disparate formats (e.g., monthly/yearly) where possible.
+
+FR.15: Dashboard must persist reports to Supabase for future retrieval.
+
+5. Technical Architecture
+
+5.1 Stack
+
+Frontend: React 18, Tailwind CSS, Lucide Icons, Recharts (optional).
+
+Backend API: Python 3.11+, FastAPI.
+
+AI Orchestration: LangGraph.
+
+Scraping: Crawl4AI.
+
+Database (Hybrid):
+
+Supabase (PostgreSQL): User auth, Report storage (JSON), Realtime Subscriptions.
+
+ChromaDB: Local vector store for active job context (RAG).
+
+LLM: GPT-4o or Claude 3.5 Sonnet.
+
+5.2 Data Flow
+
+POST /analyze: React sends URL -> FastAPI triggers background task (Celery/BackgroundTasks).
+
+Update Status: Backend pushes "Status: Scraping" to Supabase.
+
+Scrape: Crawl4AI fetches HTML -> Converts to Markdown.
+
+Embed: Markdown -> Chunking -> ChromaDB.
+
+Reason: LangGraph Agents query ChromaDB -> Generate JSON.
+
+Save: Final JSON saved to Supabase reports table.
+
+Notify: Frontend receives "Complete" signal -> Fetches Report.
+
+6. Non-Functional Requirements
+
+NFR.1 Performance: End-to-end analysis should take no longer than 120 seconds.
+
+NFR.2 Scalability: Scraping jobs must be queued; the API must not block during scraping.
+
+NFR.3 Reliability: If scraping fails (e.g., anti-bot protection), the system must return a clear error message, not a crash.
+
+NFR.4 Privacy: Scraped data is transient (ChromaDB cleared after job); only the final report is persisted.
+
+7. UI/UX Guidelines
+
+Aesthetic: Clean, professional B2B SaaS (Stripe-like).
+
+Feedback: Heavy use of progress bars and "skeleton loaders" during the analysis phase to prevent user drop-off.
+
+Visual Hierarchy: The "Winning Strategy" (The output value) must be the most prominent element on the page.
+
+8. MVP Success Metrics
+
+Success Rate: % of URLs successfully scraped and analyzed.
+
+Latency: Average time from Input -> Report Generation.
+
+Utility: (Future) "Thumbs up/down" on generated strategies.

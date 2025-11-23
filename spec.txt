@@ -1,0 +1,36 @@
+Technical Specification: CompetitorLens
+
+Version: 1.0
+Date: November 22, 2025
+
+1. Core Languages
+Backend Logic: Python 3.11+
+Frontend Interface: TypeScript / JavaScript (ES6+)
+
+2. Application Frameworks
+Backend API: FastAPI (Async Python framework)
+Frontend Library: React 18
+Build Tool: Vite
+Styling: Tailwind CSS
+
+3. AI & Orchestration Stack
+Agent Orchestration: LangGraph (DAG-based state machine)
+LLM Interface: LangChain (Python)
+Inference Models: * OpenAI GPT-4o (Reasoning & Synthesis)
+Claude 3.5 Sonnet (Text Analysis)
+
+4. Data Acquisition
+Scraping Engine: Crawl4AI (Python library)
+Browser Automation: Playwright (Managed by Crawl4AI)
+
+5. Data Persistence
+Relational Database: Supabase (PostgreSQL)
+Used for: User Auth, Job Status, Report JSON storage.
+Vector Database: ChromaDB (Embedded/Local)
+Used for: RAG context (storing scraped markdown chunks during active analysis).
+Middleware: Supabase Realtime (WebSockets for status updates).
+
+6. Infrastructure & Utilities
+Task Queue: Celery or Redis Queue (RQ)
+Caching: Redis
+UI Components: Lucide React (Icons), Recharts (Data Visualization)
